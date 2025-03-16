@@ -22,7 +22,7 @@ Antes de comenzar, asegúrate de tener instalado lo siguiente:
    ```
 
 2. Confiura el archivo .env:
-   Crea y configura un archivo .env con la siguiente información:
+   Copiar el arhcivo `.env.example` y crea la copia con el nombre `.env`. Configura el archivo `.env` con la siguiente información:
 
    ```
    SERVER=tu_direccion_servidor
