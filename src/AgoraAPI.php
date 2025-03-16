@@ -38,7 +38,7 @@ class AgoraAPI {
             return json_decode($response, true);
         } else {
             error_log("Error in GET request: HTTP $httpCode - $error");
-            return null;
+            return [];
         }
     }
 }
