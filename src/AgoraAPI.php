@@ -1,7 +1,7 @@
 <?php
 namespace src;
 
-require_once __DIR__ . '/vendor/autoload.php'; // Asegúrate de tener Composer autoload
+require_once __DIR__ . '/vendor/autoload.php';
 use Dotenv\Dotenv;
 
 class AgoraAPI {

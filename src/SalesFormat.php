@@ -11,11 +11,11 @@ class SalesFormat
 
         $agoraAPI = new AgoraAPI();
         $apiResponse = $agoraAPI->connectionApi($enpoint);
-
         if ($apiResponse === false) {
             return ; 
         }
-        return $apiResponse;
+        $ticketResponse = $apiResponse['Tickets'][0];
+        return $ticketResponse;
     }
 
     public function getLinesTickets()
@@ -26,7 +26,6 @@ class SalesFormat
         return $lines;
     }
 
-
     public function countAddinOccurrences($modifiers, $modifier_id) {
         return count(array_filter($modifiers, function($mod) use ($modifier_id) {
             return $mod['modifier_id'] === $modifier_id;
@@ -34,16 +33,33 @@ class SalesFormat
     }
 
     public function fillLines($linesData) {
+        $lines = [];
+
         foreach ($linesData as $line) {
+
+            if ($line['DiscountRate'] == $line['CashDiscount']) {
+                $discountType = 'N/A';
+            } else {
+                $discountType = ($line['DiscountRate'] > 0) ? 'percentage' : 'amount';
+            }            
+
+            $discountAmount = ($discountType === 'percentage') ? $line['DiscountRate'] * 100 : $line['CashDiscount'];
+
+            $discountConcept = 'N/A';
+            if (!empty($line['Offers'])) {
+                $discountConcept = $line['Offers'][0]['ApplicationMode'];
+            }
+            $taxRate = $line['VatRate'] * 100;
+             
             $lineData = [
                 'product_id' => $line['ProductId'],
                 'name' => $line['ProductName'],
                 'price' => $line['ProductPrice'],
                 'quantity' => $line['Quantity'],
-                'discount_type' => "",
-                'discount_amount' => "",
-                'discount_concept' => "",
-                'tax_rate' => "",
+                'discount_type' => $discountType,
+                'discount_amount' => $discountAmount,
+                'discount_concept' => $discountConcept,
+                'tax_rate' => $taxRate,
                 'modifiers' => []
             ];
 
@@ -60,34 +76,52 @@ class SalesFormat
             foreach ($line['Addins'] as &$addin) {
                 $modifierData['quantity'] = $this->countAddinOccurrences($line['Addins'], $addin['modifier_id']);
             }
+            $lines[] = $lineData;
         }
-        return $lineData;
+
+        return $lines;
     }
 
-    public function formating()
+    public function formatSale()
     {
         $ticketData = $this->getTicketsDay();
 
         if (is_string($ticketData)) {
             $id = uniqid();
+
+            $close_time = date('Y-m-d H:i:s', strtotime($ticketData['Date']));
+
             $jsonTicketData = json_decode($ticketData);
-            $total = $jsonTicketData->Ticket->Totals->NetAmount;
-    
+            $total = $jsonTicketData['Totals']['GrossAmount'];
+
+            $discount = $jsonTicketData['Discounts'];
+
+            if ($discount['DiscountRate'] == $discount['CashDiscount']) {
+                $discountType = 'N/A';
+            } else {
+                $discountType = ($discount['DiscountRate'] > 0) ? 'percentage' : 'amount';
+            }
+
+            $discountAmount = ($discountType === 'percentage') ? $discount['DiscountRate'] * 100 : $discount['CashDiscount'];
+
+            $discountConcept = 'N/A';
+            if (!empty($jsonTicketData['Offers'])) {
+                $discountConcept = $jsonTicketData['Offers'][0]['ApplicationMode'];
+            }
+        
             $jsonData = [
                 "id" => $id,
-                "close_time" => "",
+                "close_time" => $close_time,
                 "total" => $total,
-                "discount_type" => "",
-                "discount_amount" => 0,
-                "discount_concept" => "",
+                "discount_type" => $discountType,
+                "discount_amount" => $discountAmount,
+                "discount_concept" => $discountConcept,
                 "lines" => []
             ];
 
             $linesData = $this->getLinesTickets();
             $filledLines = $this->fillLines($linesData);
             $jsonData["lines"] = $filledLines;
-
-
         }
     }
 }
