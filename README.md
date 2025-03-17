@@ -21,8 +21,11 @@ Antes de comenzar, asegúrate de tener instalado lo siguiente:
    composer install
    ```
 
-2. Confiura el archivo .env:
-   Copiar el arhcivo `.env.example` y crea la copia con el nombre `.env`. Configura el archivo `.env` con la siguiente información:
+2. Configura el archivo `.env`: 
+
+   2.1 Copia el archivo `.env.example` y renómbralo como `.env`.
+
+   2.2 Abre el archivo `.env` y ajusta los valores de configuración según tus necesidades, utilizando la información requerida.
 
    ```
    SERVER=tu_direccion_servidor
@@ -39,7 +42,8 @@ Antes de comenzar, asegúrate de tener instalado lo siguiente:
    ENDPOINT_TICKET=/api/tickets
    ```
 
-3. Ejecutar la Aplicación
+3. Ejecutar la aplicación:
+
    Para ejecutar el proceso de formateo de ventas, usa:
 
    ```
